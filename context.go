@@ -4,27 +4,6 @@ import (
 	"strings"
 )
 
-const (
-	typeError = iota
-)
-
-// CustomError 自定义错误
-type CustomError struct {
-	Code int
-	msg  string
-}
-
-func (c CustomError) Error() string {
-	return c.msg
-}
-
-func newTypeError(msg string) CustomError {
-	return CustomError{
-		Code: typeError,
-		msg:  msg,
-	}
-}
-
 // given a map, pull a property from it at some deeply nested depth
 // this reimplements (most of) JS `pluck` in go: https://github.com/gjohnson/pluck
 func pluck(o map[string]interface{}, path string) interface{} {
@@ -69,32 +48,34 @@ func pluck(o map[string]interface{}, path string) interface{} {
 
 // Context 规则引擎的输入上下文
 type Context struct {
-	data       map[string]interface{}
-	intPool    map[string]int
-	stringPool map[string]string
-	boolPool   map[string]bool
+	data        map[string]interface{}
+	intPool     map[string]int
+	stringPool  map[string]string
+	boolPool    map[string]bool
+	float64Pool map[string]float64
 }
 
-func newContext(data map[string]interface{}) Context {
+func NewContext(data map[string]interface{}) Context {
 	return Context{
-		data:       data,
-		intPool:    make(map[string]int),
-		stringPool: make(map[string]string),
-		boolPool:   make(map[string]bool),
+		data:        data,
+		intPool:     make(map[string]int),
+		stringPool:  make(map[string]string),
+		boolPool:    make(map[string]bool),
+		float64Pool: make(map[string]float64),
 	}
 }
 
-func (c Context) pluck(path string) interface{} {
+func (c Context) Pluck(path string) interface{} {
 	return pluck(c.data, path)
 }
 
 // 解析出整数
-func (c Context) pluckInt(path string) (int, error) {
+func (c Context) PluckInt(path string) (int, error) {
 	i, ok := c.intPool[path]
 	if ok {
 		return i, nil
 	}
-	v := c.pluck(path)
+	v := c.Pluck(path)
 	i, ok = v.(int)
 	if ok {
 		c.intPool[path] = i
@@ -104,10 +85,10 @@ func (c Context) pluckInt(path string) (int, error) {
 }
 
 // 解析出整数数组
-func (c Context) pluckInts(paths []string) ([]int, error) {
+func (c Context) PluckInts(paths []string) ([]int, error) {
 	res := make([]int, len(paths))
 	for idx, path := range paths {
-		i, err := c.pluckInt(path)
+		i, err := c.PluckInt(path)
 		if err != nil {
 			return nil, err
 		}
@@ -117,20 +98,55 @@ func (c Context) pluckInts(paths []string) ([]int, error) {
 }
 
 // 设值
-func (c Context) setBool(path string, val bool) {
+func (c Context) SetBool(path string, val bool) {
 	c.boolPool[path] = val
 }
 
-func (c Context) pluckBool(path string) (bool, error) {
+func (c Context) PluckBool(path string) (bool, error) {
 	b, ok := c.boolPool[path]
 	if ok {
 		return b, nil
 	}
-	v := c.pluck(path)
+	v := c.Pluck(path)
 	b, ok = v.(bool)
 	if ok {
 		c.boolPool[path] = b
 		return b, nil
 	}
 	return false, newTypeError("type error: " + path + " is not bool")
+}
+
+// 解析出浮点数
+func (c Context) PluckFloat64(path string) (float64, error) {
+	i, ok := c.float64Pool[path]
+	if ok {
+		return i, nil
+	}
+	v := c.Pluck(path)
+	i1, ok := v.(float64)
+	if ok {
+		c.float64Pool[path] = i1
+		return i1, nil
+	}
+	i2, ok := v.(float32)
+	if ok {
+		c.float64Pool[path] = float64(i2)
+		return float64(i2), nil
+	}
+	i3, ok := v.(int64)
+	if ok {
+		c.float64Pool[path] = float64(i3)
+		return float64(i3), nil
+	}
+	i4, ok := v.(int32)
+	if ok {
+		c.float64Pool[path] = float64(i4)
+		return float64(i4), nil
+	}
+	i5, ok := v.(int)
+	if ok {
+		c.float64Pool[path] = float64(i5)
+		return float64(i5), nil
+	}
+	return 0, newTypeError("type error: " + path + " is not float64")
 }

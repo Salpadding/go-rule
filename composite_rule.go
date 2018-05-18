@@ -19,7 +19,7 @@ func (r AndRuler) Rule(c Context) (bool, error) {
 	return result, nil
 }
 
-func newAndRuler(rules []Ruler) AndRuler {
+func NewAndRuler(rules []Ruler) AndRuler {
 	return AndRuler(rules)
 }
 
@@ -42,6 +42,58 @@ func (r OrRuler) Rule(c Context) (bool, error) {
 	return result, nil
 }
 
-func newOrRuler(rules []Ruler) OrRuler {
+func NewOrRuler(rules []Ruler) OrRuler {
 	return OrRuler(rules)
+}
+
+type AtLeastNRuler struct {
+	rulers []Ruler
+	N      int
+}
+
+func (r *AtLeastNRuler) Rule(c Context) (bool, error) {
+	n := 0
+	for _, rule := range r.rulers {
+		res, err := rule.Rule(c)
+		if err != nil {
+			return false, err
+		}
+		if res {
+			n++
+		}
+	}
+	return n >= r.N, nil
+}
+
+func NewAtLeastNRuler(rules []Ruler, n int) *AtLeastNRuler {
+	return &AtLeastNRuler{
+		rulers: rules,
+		N:      n,
+	}
+}
+
+type AtMostNRuler struct {
+	rulers []Ruler
+	N      int
+}
+
+func (r *AtMostNRuler) Rule(c Context) (bool, error) {
+	n := 0
+	for _, rule := range r.rulers {
+		res, err := rule.Rule(c)
+		if err != nil {
+			return false, err
+		}
+		if res {
+			n++
+		}
+	}
+	return n <= r.N, nil
+}
+
+func NewAtMostNRuler(rules []Ruler, n int) *AtMostNRuler {
+	return &AtMostNRuler{
+		rulers: rules,
+		N:      n,
+	}
 }
