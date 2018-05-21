@@ -1,5 +1,8 @@
 package rule
 
+import(
+	"errors"
+)
 
 // astNode 是抽象语法树的节点
 type astNode struct {
@@ -23,20 +26,27 @@ func (node *astNode) appendChild(anotherNode *astNode) {
 }
 
 // buildAST 递归构造抽象语法树
-func buildAST(tks *tokens) *astNode {
+func buildAST(tks *tokens) (*astNode, error) {
+	if tks.length() == 0{
+		return nil, errors.New("unexpected eof")
+	}
 	current := tks.peak()
 	if current.tokenType == leftParenthesisToken {
 		node := new(astNode)
 		node.token = current
 		for tks.shift(); tks.peak().tokenType != rightParenthesisToken; {
-			node.appendChild(buildAST(tks))
+			newNode, err := buildAST(tks)
+			if err != nil{
+				return nil ,err
+			}
+			node.appendChild(newNode)
 		}
 		// 弹出右括号
 		tks.shift()
-		return node
+		return node, nil
 	}
 	tks.shift()
 	return &astNode{
 		token:    current,
-	}
+	}, nil
 }

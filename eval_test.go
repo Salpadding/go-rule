@@ -3,6 +3,7 @@ package rule
 import(
 	"testing"
 	"github.com/stretchr/testify/assert"	
+	"io/ioutil"
 )
 
 // 心包经<=-9 或者任意两条经络>=8或<=8
@@ -210,3 +211,10 @@ func Testrs2rule1fail(t *testing.T){
 	assert.False(t, result)
 }
 
+func TestFile(t *testing.T){
+	data, err := ioutil.ReadFile("./testdata/rules.txt")
+	assert.NoError(t, err)
+	evaultor := NewEvaluator()
+	_, err = evaultor.Eval(string(data))	
+	assert.NoError(t, err)
+}

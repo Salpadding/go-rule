@@ -3,7 +3,11 @@ package rule
 import (
 	"errors"
 	"strconv"
+	"regexp"
+	"strings"
 )	
+
+var commentPattern = regexp.MustCompile(`/\*.*?\*/`)
 
 func eval(node *astNode, e *env) (Ruler, error) {
 	switch node.token.tokenType {
@@ -99,8 +103,24 @@ type Evaluator struct{
 	e *env
 }
 
-func (evaler *Evaluator) Eval(expression string)(Ruler, error){
-	return eval(buildAST(tokenize(expression)), evaler.e)
+func (evaler *Evaluator) Eval(expressions string)(Ruler, error){
+	expressions = commentPattern.ReplaceAllString(expressions, "")
+	var ruler Ruler
+	var err error
+	for _, expr := range strings.Split(expressions, ";"){
+		if strings.TrimSpace(expr) == ""{
+			continue
+		}
+		node, err := buildAST(tokenize(expr))
+		if err != nil{
+			return nil, errors.New("expression " + expr + " parse fail")
+		}
+		ruler, err = eval(node, evaler.e)
+		if err != nil{
+			return nil, err
+		}
+	}
+	return ruler, err
 }
 
 func NewEvaluator() *Evaluator{

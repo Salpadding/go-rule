@@ -54,14 +54,14 @@ func (tks *tokens) append(tk *token) {
 }
 
 // shift 弹出第一个 token
-func (tks *tokens) shift() *token {
+func (tks *tokens) shift() (*token) {
 	firstToken := tks.tokens[0]
 	tks.tokens = tks.tokens[1:]
 	return firstToken
 }
 
 // peak 查看第一个 token
-func (tks *tokens) peak() *token {
+func (tks *tokens) peak() (*token) {
 	return tks.tokens[0]
 }
 

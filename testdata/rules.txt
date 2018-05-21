@@ -1,0 +1,67 @@
+/* 应激状态 */
+(let rs1rule1 'c0 <= -9'); 
+(let 
+    rs1rule1 
+		(or 
+            rs1rule1 (atLeast 2 'c0>=8' 'c1>=8' 'c2>=8' 'c3>=8' 'c4>=8' 'c5>=8' 'c6>=8' 'c7>=8')
+        )
+);
+
+(let rs1rule1
+	(or rs1rule1 
+		(atLeast 2 'c0<=-8' 'c1<=-8' 'c2<=-8' 'c3<=-8' 'c4<=-8' 'c5<=-8' 'c6<=-8' 'c7<=-8')
+	) 
+);
+
+(
+    let rs1rule1 (
+        and (rs1rule1  'isSportOrDrunk=1')
+    )
+);
+
+
+/* 感冒状态 */
+(
+    let rs2rule1 (
+        and (
+            (or 'c4<=0' 'c4>=-1')
+            (atLeast 3 'c2>=2' 'c7>=2' 'c3<=-2' 'c6<=-2' 'c5<=-2' 'heartRate>=80')
+        )
+    )
+);
+(
+    let rs2rule1 (
+        or rs2rule1 (
+            and ('c4 = 1')
+            (
+                atLeast 2 'c2>=2' 'c7>=2' 'c3<=-2' 'c6<=-2' 'c5<=-2' 'heartRate>=80'
+            )
+        )
+    )
+);
+
+(
+    let rs2rule1 (
+        or rs2rule1 (
+            and 'c4 >= 1'
+            (
+                atLeast 2 'c2>=2' 'c7>=2' 'c3<=-2' 'c6<=-2' 'c5<=-2' 'heartRate>=80'
+            )
+        )
+    )
+);
+
+(
+    let rs2rule1 (
+        and rs2rule1 'isCold=1'
+    )
+);
+
+
+/* 没有感冒 性别不是男性 */
+(
+    let rs2rule2 ( 
+        and (not rs2rule1) 'gender=1' 
+    )
+);
+
