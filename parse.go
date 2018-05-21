@@ -4,14 +4,16 @@ import (
 	"errors"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var ops = []string{"=", "!=", ">", ">=", "<", "<="}
 
 var unitRulePattern = regexp.MustCompile("(.+?)(=|!=|>=|<=|<|>)(.+)")
 
+// parseUnitRule 解析一个规则单元 例如：c0<=10
 func parseUnitRule(token string) (Ruler, error) {
-	params := unitRulePattern.FindStringSubmatch(token)
+	params := unitRulePattern.FindStringSubmatch(strings.Replace(token, " ", "", -1))
 	if len(params) != 4 {
 		return nil, errors.New("parse error: invalid expression " + token)
 	}
@@ -31,63 +33,63 @@ func parseUnitRule(token string) (Ruler, error) {
 	return NewComparatorRule(params[1], index, val)
 }
 
-func parse(node *ASTNode) (Ruler, error) {
-	switch node.NodeType {
-	case andNode:
-		rulers := make([]Ruler, 0)
-		for n := node.Next; n != nil; n = n.Next {
-			newRuler, err := parse(n)
-			if err != nil {
-				return nil, err
-			}
-			rulers = append(rulers, newRuler)
-		}
-		return AndRuler(rulers), nil
-	case orNode:
-		rulers := make([]Ruler, 0)
-		for n := node.Next; n != nil; n = n.Next {
-			newRuler, err := parse(n)
-			if err != nil {
-				return nil, err
-			}
-			rulers = append(rulers, newRuler)
-		}
-		return OrRuler(rulers), nil
-	case atLeastNode:
-		rulers := make([]Ruler, 0)
-		n, err := strconv.Atoi(node.Next.Token)
-		if err != nil {
-			return nil, err
-		}
-		for n := node.Next.Next; n != nil; n = n.Next {
-			newRuler, err := parse(n)
-			if err != nil {
-				return nil, err
-			}
-			rulers = append(rulers, newRuler)
-		}
-		return NewAtLeastNRuler(rulers, n), nil
-	case atMostNode:
-		rulers := make([]Ruler, 0)
-		n, err := strconv.Atoi(node.Next.Token)
-		if err != nil {
-			return nil, err
-		}
-		for n := node.Next.Next; n != nil; n = n.Next {
-			newRuler, err := parse(n)
-			if err != nil {
-				return nil, err
-			}
-			rulers = append(rulers, newRuler)
-		}
-		return NewAtMostNRuler(rulers, n), nil
-	case parenthesisNode:
-		return parse(node.Child)
-	default:
-		return parseUnitRule(node.Token)
-	}
-}
+// func parse(node *ASTNode) (Ruler, error) {
+// 	switch node.NodeType {
+// 	case andNode:
+// 		rulers := make([]Ruler, 0)
+// 		for n := node.Next; n != nil; n = n.Next {
+// 			newRuler, err := parse(n)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			rulers = append(rulers, newRuler)
+// 		}
+// 		return AndRuler(rulers), nil
+// 	case orNode:
+// 		rulers := make([]Ruler, 0)
+// 		for n := node.Next; n != nil; n = n.Next {
+// 			newRuler, err := parse(n)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			rulers = append(rulers, newRuler)
+// 		}
+// 		return OrRuler(rulers), nil
+// 	case atLeastNode:
+// 		rulers := make([]Ruler, 0)
+// 		n, err := strconv.Atoi(node.Next.Token)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		for n := node.Next.Next; n != nil; n = n.Next {
+// 			newRuler, err := parse(n)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			rulers = append(rulers, newRuler)
+// 		}
+// 		return NewAtLeastNRuler(rulers, n), nil
+// 	case atMostNode:
+// 		rulers := make([]Ruler, 0)
+// 		n, err := strconv.Atoi(node.Next.Token)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 		for n := node.Next.Next; n != nil; n = n.Next {
+// 			newRuler, err := parse(n)
+// 			if err != nil {
+// 				return nil, err
+// 			}
+// 			rulers = append(rulers, newRuler)
+// 		}
+// 		return NewAtMostNRuler(rulers, n), nil
+// 	case parenthesisNode:
+// 		return parse(node.Child)
+// 	default:
+// 		return parseUnitRule(node.Token)
+// 	}
+// }
 
-func ParseRule(s string) (Ruler, error) {
-	return parse(buildAST(tokenize(s)))
-}
+// func ParseRule(s string) (Ruler, error) {
+// 	return parse(buildAST(tokenize(s)))
+// }

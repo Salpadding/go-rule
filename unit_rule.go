@@ -21,6 +21,18 @@ type Ruler interface {
 	Rule(c Context) (bool, error)
 }
 
+// Negate 对规则进行否运算
+func Negate(r Ruler) Ruler {
+	negateRule := func(c Context) (bool, error) {
+		result, err := r.Rule(c)
+		if err != nil {
+			return false, err
+		}
+		return !result, nil
+	}
+	return NewUnitRuler(negateRule)
+}
+
 func NewUnitRuler(rule Rule) *UnitRuler {
 	return &UnitRuler{
 		rule: rule,

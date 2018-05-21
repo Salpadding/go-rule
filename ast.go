@@ -1,60 +1,34 @@
 package rule
 
-const (
-	leftParenthesis  = "("
-	rightParenthesis = ")"
-	and              = "$and"
-	or               = "$or"
-	atLeast          = "$atLeast"
-	atMost           = "$atMost"
-)
 
-const (
-	leafNode = iota
-	andNode
-	orNode
-	atLeastNode
-	atMostNode
-	parenthesisNode
-)
-
-var nodeTypeMap = map[string]int{
-	and:             andNode,
-	or:              orNode,
-	atLeast:         atLeastNode,
-	atMost:          atMostNode,
-	leftParenthesis: parenthesisNode,
-}
-
-// ASTNode 是抽象语法树的节点
-type ASTNode struct {
-	Child *ASTNode
+// astNode 是抽象语法树的节点
+type astNode struct {
+	child *astNode
 	// 列表用链表形式存储
-	Next     *ASTNode
-	Token    string
-	NodeType int
+	next     *astNode
+	token    *token
 }
 
 // appendChild 给当前节点增加一个子节点
-func (node *ASTNode) appendChild(anotherNode *ASTNode) {
-	if node.Child == nil {
-		node.Child = anotherNode
+func (node *astNode) appendChild(anotherNode *astNode) {
+	if node.child == nil {
+		node.child = anotherNode
 		return
 	}
-	current := node.Child
-	for current.Next != nil {
-		current = current.Next
+	current := node.child
+	for current.next != nil {
+		current = current.next
 	}
-	current.Next = anotherNode
+	current.next = anotherNode
 }
 
 // buildAST 递归构造抽象语法树
-func buildAST(tks *Tokens) *ASTNode {
+func buildAST(tks *tokens) *astNode {
 	current := tks.peak()
-	if current == leftParenthesis {
-		node := new(ASTNode)
-		node.NodeType = parenthesisNode
-		for tks.shift(); tks.peak() != rightParenthesis; {
+	if current.tokenType == leftParenthesisToken {
+		node := new(astNode)
+		node.token = current
+		for tks.shift(); tks.peak().tokenType != rightParenthesisToken; {
 			node.appendChild(buildAST(tks))
 		}
 		// 弹出右括号
@@ -62,9 +36,7 @@ func buildAST(tks *Tokens) *ASTNode {
 		return node
 	}
 	tks.shift()
-	nodeType, _ := nodeTypeMap[current]
-	return &ASTNode{
-		Token:    current,
-		NodeType: nodeType,
+	return &astNode{
+		token:    current,
 	}
 }

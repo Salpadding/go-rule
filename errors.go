@@ -1,8 +1,9 @@
 package rule
 
 const (
-	typeError = iota
-	argError
+	TypeError = iota
+	ArgError
+	PropertyNotFoundError
 )
 
 // CustomError 自定义错误
@@ -17,14 +18,14 @@ func (c CustomError) Error() string {
 
 func newTypeError(msg string) CustomError {
 	return CustomError{
-		Code: typeError,
+		Code: TypeError,
 		msg:  msg,
 	}
 }
 
 func newArgError(msg string) CustomError {
 	return CustomError{
-		Code: argError,
+		Code: ArgError,
 		msg:  msg,
 	}
 }

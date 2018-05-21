@@ -55,6 +55,7 @@ type Context struct {
 	float64Pool map[string]float64
 }
 
+// NewContext 生成一个上下文
 func NewContext(data map[string]interface{}) Context {
 	return Context{
 		data:        data,
@@ -65,11 +66,12 @@ func NewContext(data map[string]interface{}) Context {
 	}
 }
 
+// Pluck 读取字段
 func (c Context) Pluck(path string) interface{} {
 	return pluck(c.data, path)
 }
 
-// 解析出整数
+// PluckInt 读取整数
 func (c Context) PluckInt(path string) (int, error) {
 	i, ok := c.intPool[path]
 	if ok {
@@ -84,7 +86,7 @@ func (c Context) PluckInt(path string) (int, error) {
 	return 0, newTypeError("type error: " + path + " is not integer")
 }
 
-// 解析出整数数组
+// Pluck 读取整数数组
 func (c Context) PluckInts(paths []string) ([]int, error) {
 	res := make([]int, len(paths))
 	for idx, path := range paths {
