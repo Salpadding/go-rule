@@ -16,7 +16,10 @@ func main(t *testing.T){
 	evaultor.Eval(`(let rs1rule1 'c0 <= -9')`);
 	// (or rule1 rule2) return composite rule
 	evaultor.Eval(`(let rs1rule1 
-			(or rs1rule1 (atLeast 2 'c0>=8' 'c1>=8' 'c2>=8' 'c3>=8' 'c4>=8' 'c5>=8' 'c6>=8' 'c7>=8'))
+			(or rs1rule1 (
+					atLeast 2 'c0 >= 8' 'c1 >= 8' 'c2 >= 8' 'c3 >= 8' 'c4>=8' 'c5>=8' 'c6>=8' 'c7>=8'
+				)
+			)
 		)`)
 	// (atLeast 2 rule1 rule2 rule3) success when at least 2 of rule1 rule2 success	
 	evaultor.Eval(`(let rs1rule1
