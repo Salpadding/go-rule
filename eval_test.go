@@ -217,4 +217,19 @@ func TestFile(t *testing.T){
 	evaultor := NewEvaluator()
 	_, err = evaultor.Eval(string(data))	
 	assert.NoError(t, err)
+	rs1rule1, err := evaultor.Eval("rs1rule1")
+	ctx := NewContext(map[string]interface{}{
+		"c0": -10,
+		"c1": 0,
+		"c2": 0,
+		"c3": 0,
+		"c4": 0,
+		"c5": 0,
+		"c6": 0,
+		"c7": 0,
+		"isSportOrDrunk": 1,
+	})
+	result, err := rs1rule1.Rule(ctx)	
+	assert.NoError(t, err)
+	assert.True(t, result)	
 }
