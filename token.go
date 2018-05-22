@@ -27,6 +27,8 @@ const (
 	atLeastToken
 	// atMost (let rs1 (atMost 2 rs2 `c3 <= 100`) )
 	atMostToken
+	// export
+	exportToken
 )
 
 var keyWords = map[string]int{
@@ -36,6 +38,7 @@ var keyWords = map[string]int{
 	"atLeast": atLeastToken,
 	"atMost":  atMostToken,
 	"let":     letToken,
+	"export":  exportToken,
 }
 
 type token struct {
@@ -54,14 +57,14 @@ func (tks *tokens) append(tk *token) {
 }
 
 // shift 弹出第一个 token
-func (tks *tokens) shift() (*token) {
+func (tks *tokens) shift() *token {
 	firstToken := tks.tokens[0]
 	tks.tokens = tks.tokens[1:]
 	return firstToken
 }
 
 // peak 查看第一个 token
-func (tks *tokens) peak() (*token) {
+func (tks *tokens) peak() *token {
 	return tks.tokens[0]
 }
 
@@ -88,9 +91,9 @@ func (s *scanner) tokenize() *tokens {
 	tks := new(tokens)
 	tks.tokens = make([]*token, 0)
 	r, _, err := s.reader.ReadRune()
-	for err == nil{
+	for err == nil {
 		if isBlank(r) {
-			r, _, err = s.reader.ReadRune()			
+			r, _, err = s.reader.ReadRune()
 			continue
 		}
 		switch r {

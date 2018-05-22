@@ -1,26 +1,19 @@
 package rule
 
+import "errors"
+
 // env 是环境变量
 type env struct {
-	parent *env
-	vars   map[string]Ruler
+	parent  *env
+	locals  map[string]Ruler
+	globals map[string]Ruler
 }
 
 func newEnv() *env {
 	e := new(env)
-	e.vars = make(map[string]Ruler)
+	e.locals = make(map[string]Ruler)
+	e.globals = make(map[string]Ruler)
 	return e
-}
-
-// find 一层一层往上找变量所在的环境
-func (e *env) find(key string) *env {
-	if _, ok := e.vars[key]; ok {
-		return e
-	}
-	if e.parent == nil {
-		return nil
-	}
-	return e.parent.find(key)
 }
 
 // newSubEnv 新生成一个子环境
@@ -30,16 +23,25 @@ func (e *env) newSubEnv() *env {
 	return ne
 }
 
-// set 设置变量
-func (e *env) set(key string, r Ruler) {
-	e.vars[key] = r
+// setLocal 设置变量
+func (e *env) setLocal(key string, r Ruler) {
+	e.locals[key] = r
+}
+
+// setGlobal 设置变量
+func (e *env) setGlobal(key string, r Ruler) {
+	e.globals[key] = r
 }
 
 // get 查找变量
-func (e *env) get(key string) Ruler {
-	ne := e.find(key)
-	if ne == nil {
-		return nil
+func (e *env) get(key string) (Ruler, error) {
+	r, ok := e.locals[key]
+	if ok {
+		return r, nil
 	}
-	return ne.vars[key]
+	r, ok = e.globals[key]
+	if ok {
+		return r, nil
+	}
+	return nil, errors.New("cannot find variable" + key)
 }

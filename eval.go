@@ -89,13 +89,23 @@ func eval(node *astNode, e *env) (Ruler, error) {
 		if err != nil {
 			return nil, err
 		}
-		e.set(node.next.token.buf, newRuler)
+		e.setLocal(node.next.token.buf, newRuler)
+		return newRuler, nil
+	case exportToken:
+		if node.next == nil || node.next.next == nil {
+			return nil, errors.New("export requires a symbol and a rule expression")
+		}
+		newRuler, err := eval(node.next.next, e)
+		if err != nil {
+			return nil, err
+		}
+		e.setGlobal(node.next.token.buf, newRuler)
 		return newRuler, nil
 	case unitRuleToken:
 		return parseUnitRule(node.token.buf)
 	// symbol token
 	default:
-		return e.get(node.token.buf), nil
+		return e.get(node.token.buf)
 	}
 }
 
@@ -131,7 +141,7 @@ func (evaler *Evaluator) Eval(expressions string) (Ruler, error) {
 
 func (evaler *Evaluator) Expect(c Context) map[string]*ExpectResult {
 	results := make(map[string]*ExpectResult)
-	for n, r := range evaler.e.vars {
+	for n, r := range evaler.e.globals {
 		result, err := r.Rule(c)
 		results[n] = &ExpectResult{
 			RuleName:  n,
