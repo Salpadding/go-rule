@@ -40,9 +40,8 @@ func main(){
 		"c7": 0,
 		"isSportOrDrunk": 1,
 	})
-	result, _ := rs1rule1.Rule(ctx)	
-	fmt.Println(result)
+	results, _ := evaultor.Expect(ctx)
+	fmt.Printf("%v", results["rs1rule1"].Ok)
 }
-
 ```
 
